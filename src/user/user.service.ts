@@ -10,19 +10,30 @@ export class UserService {
 
   async createUser(registerUserDto: RegisterDto) {
     try {
-      await this.userModel.create({
+      const newUser = await this.userModel.create({
         fname: registerUserDto.fname,
         lname: registerUserDto.lname,
         email: registerUserDto.email,
         password: registerUserDto.password,
       });
+      return newUser;
     } catch (err: unknown) {
       const e = err as { code?: number };
       console.log(err);
       if (e.code == 11000) {
-        throw new ConflictException('Email is alrady taken.');
+        throw new ConflictException('Email is already taken.');
       }
+      throw err;
     }
-    return { message: 'User Created !' };
+  }
+  async findUserByEmail(email: string) {
+    try {
+      const matchUser = await this.userModel.findOne({
+        email: email
+      });
+      return matchUser;
+    } catch (err: unknown) {
+      throw err;
+    }
   }
 }

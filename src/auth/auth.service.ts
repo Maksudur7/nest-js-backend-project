@@ -1,11 +1,16 @@
 import { UserService } from './../user/user.service';
 import { Injectable } from '@nestjs/common';
 import { RegisterDto } from './dto/registerUser.dto';
-import bcript from 'bcrypt'
+import bcript from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { loginDto } from './dto/loginUserdto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
   async registerUser(registerUserDto: RegisterDto) {
     console.log('regster dto', registerUserDto);
 
@@ -13,12 +18,28 @@ export class AuthService {
     const has = await bcript.hash(registerUserDto.password, saltRounds);
     // logic for user register
     /**
-     * 1. check if email alrady exists
-     * 2. has the password
-     * 3. generate jwe token
-     * 5. send token in response
+     * 1. v check if email alrady exists
+     * 2. v has the password
+     * 3. v generate jwe token
+     * 5. v send token in response
      */
-    const result = await this.userService.createUser({...registerUserDto, password : has,});
-    return result;
+    const user = await this.userService.createUser({ ...registerUserDto, password: has });
+    const paylod = { sub: user._id.toString() };
+    const token = await this.jwtService.signAsync(paylod);
+    return { Access_token: token };
   }
-}
+  async loginUser(loginUserDto: loginDto) {
+    console.log(loginUserDto);
+    const user = await this.userService.findUserByEmail(loginUserDto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const compareUser = await bcript.compare(loginUserDto.password, user.password);
+    if (!compareUser) {
+      throw new Error('Invalid password');
+    }
+    const payload = { sub: user._id.toString() };
+    const token = await this.jwtService.signAsync(payload);
+    console.log('find token', token);
+    return { Access_token: token };
+  }

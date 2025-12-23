@@ -1,16 +1,9 @@
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
-export class RegisterDto {
-  @IsString()
-  fname: string;
-
-  @IsString()
-  lname: string;
-
+export class loginDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-
   @IsString()
   password: string;
 }
