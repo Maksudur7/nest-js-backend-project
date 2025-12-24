@@ -23,7 +23,9 @@ export class AuthService {
       password: has,
     });
 
-    const paylod = { sub: user._id.toString() };
+    //todo : remove role admin from here . only for test.
+
+    const paylod = { sub: user._id.toString(), role: 'admin' };
     const token = await this.jwtService.signAsync(paylod);
     return { Access_token: token };
   }
