@@ -10,36 +10,42 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
+
   async registerUser(registerUserDto: RegisterDto) {
     console.log('regster dto', registerUserDto);
 
     const saltRounds = 10;
     const has = await bcript.hash(registerUserDto.password, saltRounds);
-    // logic for user register
-    /**
-     * 1. v check if email alrady exists
-     * 2. v has the password
-     * 3. v generate jwe token
-     * 5. v send token in response
-     */
-    const user = await this.userService.createUser({ ...registerUserDto, password: has });
+
+    const user = await this.userService.createUser({
+      ...registerUserDto,
+      password: has,
+    });
+
     const paylod = { sub: user._id.toString() };
     const token = await this.jwtService.signAsync(paylod);
     return { Access_token: token };
   }
+
   async loginUser(loginUserDto: loginDto) {
     console.log(loginUserDto);
     const user = await this.userService.findUserByEmail(loginUserDto.email);
     if (!user) {
       throw new Error('User not found');
     }
-    const compareUser = await bcript.compare(loginUserDto.password, user.password);
+
+    const compareUser = await bcript.compare(
+      loginUserDto.password,
+      user.password,
+    );
     if (!compareUser) {
       throw new Error('Invalid password');
     }
+
     const payload = { sub: user._id.toString() };
     const token = await this.jwtService.signAsync(payload);
     console.log('find token', token);
     return { Access_token: token };
   }
+}

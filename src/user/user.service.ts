@@ -26,6 +26,7 @@ export class UserService {
       throw err;
     }
   }
+
   async findUserByEmail(email: string) {
     try {
       const matchUser = await this.userModel.findOne({
@@ -35,5 +36,9 @@ export class UserService {
     } catch (err: unknown) {
       throw err;
     }
+  }
+
+  async getUserById(id: string) {
+    return await this.userModel.findOne({ _id: id });
   }
 }
